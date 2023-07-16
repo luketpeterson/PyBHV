@@ -6,7 +6,7 @@
 using namespace std;
 
 #define MAJ_INPUT_HYPERVECTOR_COUNT 1000000
-#define INPUT_HYPERVECTOR_COUNT 10000
+#define RAND_HYPERVECTOR_COUNT 10000
 
 
 float majority_benchmark(int n, bool display, bool keep_in_cache) {
@@ -20,7 +20,7 @@ float majority_benchmark(int n, bool display, bool keep_in_cache) {
     word_t** inputs[input_output_count];
     for (int i=0; i<input_output_count; i++){
         word_t** rs = (word_t**)malloc(sizeof(word_t**) * n);
-        for (size_t i = 0; i < n; ++i) {
+        for (int i = 0; i < n; ++i) {
             rs[i] = bhv::rand();
         }
         inputs[i] = rs;
@@ -53,7 +53,7 @@ float majority_benchmark(int n, bool display, bool keep_in_cache) {
     //Clean up our mess
     for (int i=0; i<input_output_count; i++){
         word_t** rs = inputs[i];
-        for (size_t i = 0; i < n; ++i) {
+        for (int i = 0; i < n; ++i) {
             free(rs[i]);
         }
         free(rs);
@@ -65,7 +65,7 @@ float majority_benchmark(int n, bool display, bool keep_in_cache) {
 
 
 float rand_benchmark(bool display, bool keep_in_cache) {
-    const int test_count = INPUT_HYPERVECTOR_COUNT;
+    const int test_count = RAND_HYPERVECTOR_COUNT;
     const int input_output_count = (keep_in_cache? 1 : test_count);
 
     //Allocate a buffer for TEST_COUNT results
@@ -87,7 +87,7 @@ float rand_benchmark(bool display, bool keep_in_cache) {
 
     float mean_test_time = (float)chrono::duration_cast<chrono::nanoseconds>(t2-t1).count() / (float)test_count;
     if (display)
-        cout << "in_cache: " << keep_in_cache << ", total: " << mean_test_time / 1000.0 << "µs" << endl;
+        cout << "in_cache: " << keep_in_cache << ", total: " << mean_test_time << "ns" << endl;
 
     //Clean up our mess
     free(result_buffer);
@@ -96,7 +96,7 @@ float rand_benchmark(bool display, bool keep_in_cache) {
 }
 
 float random_benchmark(bool display, bool keep_in_cache, float base_frac) {
-    const int test_count = INPUT_HYPERVECTOR_COUNT;
+    const int test_count = RAND_HYPERVECTOR_COUNT;
     const int input_output_count = (keep_in_cache? 1 : test_count);
     volatile double n = ((double)(rand() - RAND_MAX/2)/(double)(RAND_MAX))/1000.;
     float p = base_frac + n;
@@ -112,8 +112,9 @@ float random_benchmark(bool display, bool keep_in_cache, float base_frac) {
 
         word_t* m = result_buffer + (io_buf_idx * BYTES / sizeof(word_t));
 
-//        bhv::random_into(m, p); // baseline
-        bhv::random_into_1tree_sparse(m, p); // 1 level of tree expansion into sparse
+        // bhv::random_into(m, p); // baseline
+        bhv::random_into_avx512(m, p);
+        // bhv::random_into_1tree_sparse(m, p); // 1 level of tree expansion into sparse
 
         // once runtime of random_into drops under 500ns, consider removing this
         observed_frac[i] = (double)bhv::active(m)/(double)BITS;
@@ -143,13 +144,10 @@ int main() {
 
     cout << "*-= IN CACHE TESTS =-*" << endl;
     rand_benchmark(true, true);
-    rand_benchmark(true, true);
-    rand_benchmark(true, true);
 
     cout << "*-= OUT OF CACHE TESTS =-*" << endl;
     rand_benchmark(true, false);
-    rand_benchmark(true, false);
-    rand_benchmark(true, false);
+
 #endif
 #ifdef RANDOM
 //    float ps[12] = {.001, .01, .04, .2, .26, .48, .52, .74,.8, .95, .99, .999};
