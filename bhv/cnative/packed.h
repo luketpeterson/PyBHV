@@ -1,6 +1,7 @@
 #ifndef BHV_PACKED_H
 #define BHV_PACKED_H
 
+#include <bit>
 #include <random>
 #include <cstring>
 #include <algorithm>
@@ -213,6 +214,21 @@ namespace bhv {
         else return representative_impl(xs, size);
     }
 
+    void roll_words_into(word_t * x, int32_t d, word_t * target) {
+        int32_t offset = ((d % WORDS) + WORDS) % WORDS;
+
+        memcpy(target, x + offset, (WORDS - offset) * sizeof(word_t));
+        memcpy(target + WORDS - offset, x, offset * sizeof(word_t));
+    }
+
+    void roll_word_bits_into(word_t * x, int32_t d, word_t * target) {
+        int32_t offset = d % BITS_PER_WORD;
+
+        for (word_iter_t i = 0; i < WORDS; ++i) {
+            target[i] = std::rotl(x[i], offset);
+        }
+    }
+
     void permute_words_into(word_t * x, word_iter_t* word_permutation, word_t * target) {
         for (word_iter_t i = 0; i < WORDS; ++i) {
             target[i] = x[word_permutation[i]];
@@ -238,10 +254,16 @@ namespace bhv {
         return p;
     }
 
-    void permute_into(word_t * x, int32_t perm, word_t * target) {
-        if (perm == 0) *target = *x;
-        else if (perm > 0) permute_words_into(x, rand_word_permutation(perm), target);
-        else inverse_permute_words_into(x, rand_word_permutation(-perm), target);
+    void permute_into(word_t * x, int32_t perm_id, word_t * target) {
+        if (perm_id == 0) {
+            memcpy(target, x, BYTES);
+            return;
+        }
+
+        word_iter_t* perm = rand_word_permutation(abs(perm_id));
+        if (perm_id > 0) permute_words_into(x, perm, target);
+        else inverse_permute_words_into(x, perm, target);
+        free(perm);
     }
 
     void rehash_into(word_t * x, word_t * target) {
