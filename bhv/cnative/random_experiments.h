@@ -54,8 +54,8 @@
 //             //Get 512 bits of true random, which is 8 input bits for each output bit
 //             //TODO: Get the 512-bit random to actually work
 //             __m512i true_random;
-//             ((__m256i*)(&true_random))[0] = avx2_pcg32_random_r(&avx2_key);
-//             ((__m256i*)(&true_random))[1] = avx2_pcg32_random_r(&avx2_key);
+//             ((__m256i*)(&true_random))[0] = avx512_pcg32_random_r(&key512);
+//             ((__m256i*)(&true_random))[1] = avx512_pcg32_random_r(&key512);
 
 //             //We have a definitive answer for every 8-bit random that is above or below the chunk
 //             // value, but we need to continue to the next chunk if they are equal
@@ -125,7 +125,7 @@
 //         int chunk_idx = 0;
 //         while (chunk_idx < num_chunks) {
 //             //Get 256 bits of true random, which is 4 input bits for each output bit
-//             __m256i rand_source0 = avx2_pcg32_random_r(&avx2_key);
+//             __m256i rand_source0 = avx512_pcg32_random_r(&key512);
 
 //             //Spread the random out in a 512-bit AVX vector, so the lower 4 bits of each 8-bit value
 //             // are random, while the upper 4 bits are 0
@@ -179,7 +179,7 @@
 // inline void generate_and_test_layer_avx512(__m512i* layer_threshold_vec, __mmask64* gt_bits, uint64_t* chunk_mask) {
 
 //     //Get 256 bits of true random, which is 4 input bits for each output bit
-//     __m256i rand_source0 = avx2_pcg32_random_r(&avx2_key);
+//     __m256i rand_source0 = avx512_pcg32_random_r(&key512);
 
 //     //Spread the random out in a 512-bit AVX vector, so the lower 4 bits of each 8-bit value
 //     // are random, while the upper 4 bits are 0
@@ -341,7 +341,7 @@
 // inline void generate_and_test_layer_avx512(__m512i* layer_threshold_vec, __mmask64* gt_bits, uint64_t* chunk_mask) {
 
 //     //Get 256 bits of true random, which is 4 input bits for each output bit
-//     __m256i rand_source0 = avx2_pcg32_random_r(&avx2_key);
+//     __m256i rand_source0 = avx512_pcg32_random_r(&key512);
 
 //     //Spread the random out in a 512-bit AVX vector, so the lower 4 bits of each 8-bit value
 //     // are random, while the upper 4 bits are 0
@@ -505,7 +505,7 @@
 // inline void generate_and_test_layer_avx512(__m512i* layer_threshold_vec, __mmask64* gt_bits, uint64_t* chunk_mask) {
 
 //     //Get 256 bits of true random, which is 4 input bits for each output bit
-//     __m256i rand_source0 = avx2_pcg32_random_r(&avx2_key);
+//     __m256i rand_source0 = avx512_pcg32_random_r(&key512);
 
 //     //Spread the random out in a 512-bit AVX vector, so the lower 4 bits of each 8-bit value
 //     // are random, while the upper 4 bits are 0
@@ -657,7 +657,7 @@
 // inline void generate_and_test_layer_avx512(__m512i* layer_threshold_vec, __m128i* gt_bits, __m128i* chunk_mask) {
 
 //     //Get 256 bits of true random, which is 2 input bits for each output bit
-//     __m256i rand_source0 = avx2_pcg32_random_r(&avx2_key);
+//     __m256i rand_source0 = avx512_pcg32_random_r(&key512);
 
 //     //Spread the random out into two 512-bit AVX vectors, so the lower 2 bits of each 8-bit value
 //     // are random, while the upper 6 bits are 0
@@ -808,7 +808,7 @@
 // inline void generate_and_test_layer_avx512(__m512i* layer_threshold_vec, __m128i* gt_bits, __m128i* chunk_mask) {
 
 //     //Get 256 bits of true random, which is 2 input bits for each output bit
-//     __m256i rand_source0 = avx2_pcg32_random_r(&avx2_key);
+//     __m256i rand_source0 = avx512_pcg32_random_r(&key512);
 
 //     //Spread the random out into two 512-bit AVX vectors, so the lower 2 bits of each 8-bit value
 //     // are random, while the upper 6 bits are 0
@@ -968,7 +968,7 @@
 // inline void generate_and_test_2bit_layer_avx512(__m512i* layer_threshold_vec, __m128i* gt_bits, __m128i* chunk_mask) {
 
 //     //Get 256 bits of true random, which is 2 input bits for each output bit
-//     __m256i rand_source0 = avx2_pcg32_random_r(&avx2_key);
+//     __m256i rand_source0 = avx512_pcg32_random_r(&key512);
 
 //     //Spread the random out into two 512-bit AVX vectors, so the lower 2 bits of each 8-bit value
 //     // are random, while the upper 6 bits are 0
@@ -998,7 +998,7 @@
 // inline void generate_and_test_4bit_layer_avx512(__m512i* layer_threshold_vec, __mmask64* gt_bits, uint64_t* chunk_mask) {
 
 //     //Get 256 bits of true random, which is 4 input bits for each output bit
-//     __m256i rand_source0 = avx2_pcg32_random_r(&avx2_key);
+//     __m256i rand_source0 = avx512_pcg32_random_r(&key512);
 
 //     //Spread the random out in a 512-bit AVX vector, so the lower 4 bits of each 8-bit value
 //     // are random, while the upper 4 bits are 0
@@ -1170,7 +1170,7 @@
 // inline void generate_and_test_2bit_layer_avx512(__m512i* layer_threshold_vec, __m128i* gt_bits, __m128i* chunk_mask) {
 
 //     //Get 256 bits of true random, which is 2 input bits for each output bit
-//     __m256i rand_source0 = avx2_pcg32_random_r(&avx2_key);
+//     __m256i rand_source0 = avx512_pcg32_random_r(&key512);
 
 //     //Spread the random out into two 512-bit AVX vectors, so the lower 2 bits of each 8-bit value
 //     // are random, while the upper 6 bits are 0
@@ -1201,8 +1201,8 @@
 
 //     //Get 512 bits of true random, which is 8 input bits for each output bit
 //     __m512i true_random;
-//     ((__m256i*)(&true_random))[0] = avx2_pcg32_random_r(&avx2_key);
-//     ((__m256i*)(&true_random))[1] = avx2_pcg32_random_r(&avx2_key);
+//     ((__m256i*)(&true_random))[0] = avx512_pcg32_random_r(&key512);
+//     ((__m256i*)(&true_random))[1] = avx512_pcg32_random_r(&key512);
 
 //     //We have a definitive answer for every 8-bit random that is above or below the threshold value
 //     *gt_bits = _mm512_cmpgt_epu8_mask(*layer_threshold_vec, true_random);
@@ -1373,7 +1373,7 @@
 // inline void generate_and_test_2bit_layer_avx512(__m512i* layer_threshold_vec, __m128i* gt_bits, __m128i* chunk_mask) {
 
 //     //Get 256 bits of true random, which is 2 input bits for each output bit
-//     __m256i rand_source0 = avx2_pcg32_random_r(&avx2_key);
+//     __m256i rand_source0 = avx512_pcg32_random_r(&key512);
 
 //     //Spread the random out into two 512-bit AVX vectors, so the lower 2 bits of each 8-bit value
 //     // are random, while the upper 6 bits are 0
@@ -1404,8 +1404,8 @@
 
 //     //Get 512 bits of true random, which is 8 input bits for each output bit
 //     __m512i true_random;
-//     ((__m256i*)(&true_random))[0] = avx2_pcg32_random_r(&avx2_key);
-//     ((__m256i*)(&true_random))[1] = avx2_pcg32_random_r(&avx2_key);
+//     ((__m256i*)(&true_random))[0] = avx512_pcg32_random_r(&key512);
+//     ((__m256i*)(&true_random))[1] = avx512_pcg32_random_r(&key512);
 
 //     //We have a definitive answer for every 8-bit random that is above or below the threshold value
 //     *gt_bits = _mm512_cmpgt_epu8_mask(*layer_threshold_vec, true_random);
@@ -1548,7 +1548,7 @@
 //         if (x<0.5) {
 //             x *= 2.0;
 //         } else {
-//             map += 0x1 << bit;
+//             map |= 0x1LL << bit;
 //             x -= 0.5;
 //             x *= 2.0;
 //         }
@@ -1574,7 +1574,7 @@
 
 //         //Get a fresh block of 64 random input bits to start with
 //         if (rand_blocks == 0) {
-//             rand_source = avx2_pcg32_random_r(&avx2_key);
+//             rand_source = avx512_pcg32_random_r(&key512);
 //             rand_blocks = 3;
 //         } else {
 //             rand_blocks --;
@@ -1593,7 +1593,7 @@
 //                     if (rand_blocks != 0) {
 //                         rand_blocks --;
 //                     } else {
-//                         rand_source = avx2_pcg32_random_r(&avx2_key);
+//                         rand_source = avx512_pcg32_random_r(&key512);
 //                         rand_blocks = 3;
 //                     }
 //                     reserve_bits1 = ((uint64_t*)&rand_source)[rand_blocks];
@@ -1681,7 +1681,7 @@
 //         if (x<0.5) {
 //             x *= 2.0;
 //         } else {
-//             map += 0x1 << bit;
+//             map |= 0x1LL << bit;
 //             x -= 0.5;
 //             x *= 2.0;
 //         }
@@ -1700,7 +1700,7 @@
 
 //         //Get a fresh block of 64 random input bits to start with
 //         if (rand_blocks == 0) {
-//             rand_source = avx2_pcg32_random_r(&avx2_key);
+//             rand_source = avx512_pcg32_random_r(&key512);
 //             rand_blocks = 3;
 //         } else {
 //             rand_blocks --;
@@ -1709,7 +1709,7 @@
 
 //         //reserve_bits holds bits we use for operations that don't consume a whole 64-bit block
 //         if (rand_blocks == 0) {
-//             rand_source = avx2_pcg32_random_r(&avx2_key);
+//             rand_source = avx512_pcg32_random_r(&key512);
 //             rand_blocks = 3;
 //         } else {
 //             rand_blocks --;
@@ -1740,7 +1740,7 @@
 //                 if (rand_blocks != 0) {
 //                     rand_blocks --;
 //                 } else {
-//                     rand_source = avx2_pcg32_random_r(&avx2_key);
+//                     rand_source = avx512_pcg32_random_r(&key512);
 //                     rand_blocks = 3;
 //                 }
 //                 reserve_bits = ((uint64_t*)&rand_source)[rand_blocks];
@@ -1772,7 +1772,7 @@
 //         if (x<0.5) {
 //             x *= 2.0;
 //         } else {
-//             map += 0x1 << bit;
+//             map |= 0x1LL << bit;
 //             x -= 0.5;
 //             x *= 2.0;
 //         }
@@ -1783,7 +1783,7 @@
 //     int rand_blocks = 0;
 
 //     //reserve_bits0 holds bits we use for operations that don't consume a whole 64-bit block
-//     rand_source = avx2_pcg32_random_r(&avx2_key);
+//     rand_source = avx512_pcg32_random_r(&key512);
 //     uint64_t reserve_bits0 = ((uint64_t*)&rand_source)[3];
 //     uint64_t reserve_bits1 = ((uint64_t*)&rand_source)[2];
 //     rand_blocks = 2;
@@ -1799,7 +1799,7 @@
 
 //         //Get a fresh block of 64 random input bits to start with
 //         if (rand_blocks == 0) {
-//             rand_source = avx2_pcg32_random_r(&avx2_key);
+//             rand_source = avx512_pcg32_random_r(&key512);
 //             rand_blocks = 3;
 //         } else {
 //             rand_blocks --;
@@ -1831,7 +1831,7 @@
 //                 if (rand_blocks != 0) {
 //                     rand_blocks --;
 //                 } else {
-//                     rand_source = avx2_pcg32_random_r(&avx2_key);
+//                     rand_source = avx512_pcg32_random_r(&key512);
 //                     rand_blocks = 3;
 //                 }
 //                 reserve_bits1 = ((uint64_t*)&rand_source)[rand_blocks];
@@ -1886,7 +1886,7 @@
 //         if (x<0.5) {
 //             x *= 2.0;
 //         } else {
-//             map += 0x1 << bit;
+//             map |= 0x1LL << bit;
 //             x -= 0.5;
 //             x *= 2.0;
 //         }
@@ -1994,7 +1994,7 @@
 //         if (x<0.5) {
 //             x *= 2.0;
 //         } else {
-//             map += 0x1 << bit;
+//             map |= 0x1LL << bit;
 //             x -= 0.5;
 //             x *= 2.0;
 //         }
@@ -2009,13 +2009,13 @@
 
 //         //Get a fresh block of random input bits to start with
 //         __m512i current_mask;
-//         ((__m256i*)(&current_mask))[0] = avx2_pcg32_random_r(&avx2_key);
-//         ((__m256i*)(&current_mask))[1] = avx2_pcg32_random_r(&avx2_key);
+//         ((__m256i*)(&current_mask))[0] = avx512_pcg32_random_r(&key512);
+//         ((__m256i*)(&current_mask))[1] = avx512_pcg32_random_r(&key512);
 
 //         //reserve_bits holds bits we use for operations that don't consume a whole 64-bit block
 //         __m512i reserve_bits;
-//         ((__m256i*)(&reserve_bits))[0] = avx2_pcg32_random_r(&avx2_key);
-//         ((__m256i*)(&reserve_bits))[1] = avx2_pcg32_random_r(&avx2_key);
+//         ((__m256i*)(&reserve_bits))[0] = avx512_pcg32_random_r(&key512);
+//         ((__m256i*)(&reserve_bits))[1] = avx512_pcg32_random_r(&key512);
 //         __m512i reserve_cnt = sixty_four_vec;
 
 //         //Loop until we've finalized these 256 output bits
@@ -2059,8 +2059,8 @@
 //             // if (reserve_cnt < needed_bits) {
 //             __mmask64 cmp_results = _mm512_cmpgt_epu8_mask(needed_bits, reserve_cnt);
 //             if (cmp_results != 0) {
-//                 ((__m256i*)(&reserve_bits))[0] = avx2_pcg32_random_r(&avx2_key);
-//                 ((__m256i*)(&reserve_bits))[1] = avx2_pcg32_random_r(&avx2_key);
+//                 ((__m256i*)(&reserve_bits))[0] = avx512_pcg32_random_r(&key512);
+//                 ((__m256i*)(&reserve_bits))[1] = avx512_pcg32_random_r(&key512);
 //                 reserve_cnt = sixty_four_vec;
 //             }
 
@@ -2089,7 +2089,7 @@
 //         if (x<0.5) {
 //             x *= 2.0;
 //         } else {
-//             map += 0x1 << bit;
+//             map |= 0x1LL << bit;
 //             x -= 0.5;
 //             x *= 2.0;
 //         }
