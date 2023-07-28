@@ -87,9 +87,8 @@
 // ID: 8-Bit-Unified-Wavefront-AVX2
 // 8-bit early-out
 // DESCRIPTION: 64-bit-wide unified wavefront, 8 random bits tested at a time using AVX2
-// STATUS: Works.  4.0µs
-// COMMENTS: Lots of pext calls, so it'll pay for that.  But on AVX2 machines, pext is
-//  relatively cheaper than emulating wide vector arithmatic
+// STATUS: Works.  3.0µs
+// COMMENTS: Not sure which is the faster AVX2 version, this or Single-Bit-Single-Buffer-AVX2
 // ******************************************************************************************
 
 void random_into_avx2(word_t* dst, float_t p) {
@@ -129,21 +128,10 @@ void random_into_avx2(word_t* dst, float_t p) {
 
             //We have a definitive answer for every 8-bit random that is above or below the chunk
             // value, but we need to continue to the next chunk if they are equal
-            uint32_t gt_bits;
-            uint64_t gt_bits_vec[4];
-            *(__m256i *) gt_bits_vec = _mm256_cmpgt_epi8(chunk_vecs[chunk_idx], true_random);
-            ((uint8_t*)&gt_bits)[0] = (uint8_t)_pext_u64(gt_bits_vec[0], 0x0101010101010101);
-            ((uint8_t*)&gt_bits)[1] = (uint8_t)_pext_u64(gt_bits_vec[1], 0x0101010101010101);
-            ((uint8_t*)&gt_bits)[2] = (uint8_t)_pext_u64(gt_bits_vec[2], 0x0101010101010101);
-            ((uint8_t*)&gt_bits)[3] = (uint8_t)_pext_u64(gt_bits_vec[3], 0x0101010101010101);
-
-            uint32_t eq_bits;
-            uint64_t eq_bits_vec[4];
-            *(__m256i *) eq_bits_vec = _mm256_cmpeq_epi8(chunk_vecs[chunk_idx], true_random);
-            ((uint8_t*)&eq_bits)[0] = (uint8_t)_pext_u64(eq_bits_vec[0], 0x0101010101010101);
-            ((uint8_t*)&eq_bits)[1] = (uint8_t)_pext_u64(eq_bits_vec[1], 0x0101010101010101);
-            ((uint8_t*)&eq_bits)[2] = (uint8_t)_pext_u64(eq_bits_vec[2], 0x0101010101010101);
-            ((uint8_t*)&eq_bits)[3] = (uint8_t)_pext_u64(eq_bits_vec[3], 0x0101010101010101);
+            __m256i gt_bits_vec = _mm256_cmpgt_epi8(chunk_vecs[chunk_idx], true_random);
+            __mmask32 gt_bits = _mm256_movemask_epi8(gt_bits_vec);
+            __m256i eq_bits_vec = _mm256_cmpeq_epi8(chunk_vecs[chunk_idx], true_random);
+            __mmask32 eq_bits = _mm256_movemask_epi8(eq_bits_vec);
 
             uint32_t chunk_mask = gt_bits | ~eq_bits; //bits that we can definitively answer with this chunk
             uint32_t write_mask = final_mask & chunk_mask; //1 for every bit we will write
@@ -1953,8 +1941,8 @@ void random_into_avx2(word_t* dst, float_t p) {
 //  winner, because the logic cost is reduced by 4, while the bit savings is constant.
 //******************************************************************************************
 
-// //DESCRIPTION: single-bit early-out, 256 bits at a time
-// //STATUS: working.  Fast, but not screaming fast.  
+// // //DESCRIPTION: single-bit early-out, 256 bits at a time
+// // //STATUS: working.  Fast, but not screaming fast.  
 // void random_into_avx2(word_t* dst, float_t p) {
 //     const int bit_precision = 48;
 
@@ -1987,13 +1975,13 @@ void random_into_avx2(word_t* dst, float_t p) {
 //         // aes_state += increment;
 //         // __m256i intermediate_rand = _mm256_aesenc_epi128(aes_state, increment);
 //         // __m256i current_mask = _mm256_aesenc_epi128(intermediate_rand, increment);
-//         __m256i current_mask = avx2_pcg32_random_r(&avx2_key);
+//         __m256i current_mask = avx2_pcg32_random_r(&key);
 
 //         //reserve_bits holds bits we use for operations that don't consume a whole 64-bit block
 //         // aes_state += increment;
 //         // intermediate_rand = _mm256_aesenc_epi128(aes_state, increment);
 //         // __m256i reserve_bits = _mm256_aesenc_epi128(intermediate_rand, increment);
-//         __m256i reserve_bits = avx2_pcg32_random_r(&avx2_key);
+//         __m256i reserve_bits = avx2_pcg32_random_r(&key);
 //         __m256i reserve_cnt = sixty_four_vec;
 
 //         //Loop until we've finalized these 256 output bits
@@ -2041,7 +2029,7 @@ void random_into_avx2(word_t* dst, float_t p) {
 //                 // aes_state += increment;
 //                 // intermediate_rand = _mm256_aesenc_epi128(aes_state, increment);
 //                 // reserve_bits = _mm256_aesenc_epi128(intermediate_rand, increment);
-//                 reserve_bits = avx2_pcg32_random_r(&avx2_key);
+//                 reserve_bits = avx2_pcg32_random_r(&key);
 //                 reserve_cnt = sixty_four_vec;
 //             }
 
