@@ -1,10 +1,10 @@
 
-//******************************************************************************************
+// ******************************************************************************************
 // ID: 8-Bit-Unified-Wavefront-AVX-512
 // 8-bit early-out
 // DESCRIPTION: 64-bit-wide unified wavefront, 8 random bits tested at a time using AVX-512
 // STATUS: Works.  No further work planned.  Perf ~3.3µs
-//******************************************************************************************
+// ******************************************************************************************
 
 // void random_into_avx512(word_t* dst, float_t p) {
 
@@ -82,6 +82,90 @@
 //         *((uint64_t*)(dst + word_offset)) = final_bits;
 //     }
 // }
+
+// ******************************************************************************************
+// ID: 8-Bit-Unified-Wavefront-AVX2
+// 8-bit early-out
+// DESCRIPTION: 64-bit-wide unified wavefront, 8 random bits tested at a time using AVX2
+// STATUS: Works.  4.0µs
+// COMMENTS: Lots of pext calls, so it'll pay for that.  But on AVX2 machines, pext is
+//  relatively cheaper than emulating wide vector arithmatic
+// ******************************************************************************************
+
+void random_into_avx2(word_t* dst, float_t p) {
+
+    //Each chunk is 8 bits, so 8 chunks means we'll use up to 64 bits of random for each input
+    // output value.  On average, we'll use substantially fewer; ~1.3 chunks each, or ~10 bits
+    const int num_chunks = 6;
+
+    //First start by constructing a map in 8-bit chunks for the threshold float.
+    //Coming out of this loop, each chunk can be any value, 0x00 to 0xFF.
+    uint8_t chunks[num_chunks];
+    __m256i chunk_vecs[num_chunks];
+    float_t x = p;
+    for (int i=0; i<num_chunks; i++) {
+        chunks[i] = 0;
+        for (int bit=7; bit>=0; bit--) {
+            if (x<0.5) {
+                x *= 2.0;
+            } else {
+                chunks[i] += 1 << bit;
+                x -= 0.5;
+                x *= 2.0;
+            }
+        }
+        chunk_vecs[i] = _mm256_set1_epi8(((signed char)chunks[i]) - 128);
+    }
+
+    //We'll generate the final output, 32 bits at a time
+    for (size_t byte_offset = 0; byte_offset < BYTES; byte_offset += 4) {
+
+        uint32_t final_bits = 0;
+        uint32_t final_mask = 0xFFFFFFFF; //1 for every bit whose value is still needed
+        int chunk_idx = 0;
+        while (chunk_idx < num_chunks) {
+            //Get 256 bits of true random, which is 8 input bits for each output bit
+            __m256i true_random = avx2_pcg32_random_r(&key);
+
+            //We have a definitive answer for every 8-bit random that is above or below the chunk
+            // value, but we need to continue to the next chunk if they are equal
+            uint32_t gt_bits;
+            uint64_t gt_bits_vec[4];
+            *(__m256i *) gt_bits_vec = _mm256_cmpgt_epi8(chunk_vecs[chunk_idx], true_random);
+            ((uint8_t*)&gt_bits)[0] = (uint8_t)_pext_u64(gt_bits_vec[0], 0x0101010101010101);
+            ((uint8_t*)&gt_bits)[1] = (uint8_t)_pext_u64(gt_bits_vec[1], 0x0101010101010101);
+            ((uint8_t*)&gt_bits)[2] = (uint8_t)_pext_u64(gt_bits_vec[2], 0x0101010101010101);
+            ((uint8_t*)&gt_bits)[3] = (uint8_t)_pext_u64(gt_bits_vec[3], 0x0101010101010101);
+
+            uint32_t eq_bits;
+            uint64_t eq_bits_vec[4];
+            *(__m256i *) eq_bits_vec = _mm256_cmpeq_epi8(chunk_vecs[chunk_idx], true_random);
+            ((uint8_t*)&eq_bits)[0] = (uint8_t)_pext_u64(eq_bits_vec[0], 0x0101010101010101);
+            ((uint8_t*)&eq_bits)[1] = (uint8_t)_pext_u64(eq_bits_vec[1], 0x0101010101010101);
+            ((uint8_t*)&eq_bits)[2] = (uint8_t)_pext_u64(eq_bits_vec[2], 0x0101010101010101);
+            ((uint8_t*)&eq_bits)[3] = (uint8_t)_pext_u64(eq_bits_vec[3], 0x0101010101010101);
+
+            uint32_t chunk_mask = gt_bits | ~eq_bits; //bits that we can definitively answer with this chunk
+            uint32_t write_mask = final_mask & chunk_mask; //1 for every bit we will write
+            final_bits = final_bits | (write_mask & gt_bits);
+            final_mask = final_mask & ~write_mask;
+
+            //This should be true ~88.2% of the time.  (255/256)^32
+            if (final_mask == 0) {
+                //GOAT debug printf only
+                // std::cout << chunk_idx << " breakin out!" << std::hex << final_bits <<"\n";
+                break;
+            } else {
+                //GOAT debug printf only
+                // std::cout << chunk_idx << " loopin again, (mask=" << std::hex << final_mask << "), ";
+            }
+
+            chunk_idx++;
+        }
+
+        *((uint32_t*)((uint8_t*)dst + byte_offset)) = final_bits;
+    }
+}
 
 //******************************************************************************************
 // ID: 4-Bit-Unified-Wavefront-AVX-512
